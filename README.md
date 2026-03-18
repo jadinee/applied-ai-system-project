@@ -30,8 +30,8 @@ It wrote the code, ran away, and now the game is unplayable.
 - [x] Explain what fixes you applied.
 
 ## 📸 Demo
-
-- [x] ![Game Screenshot](winninggame.png)
+- [x] ![Glitch Screenshot](glitch.png)
+- [x] ![Winning Game Screenshot](winninggame.png)
 
 ## ✅ What I Did
 
