@@ -12,10 +12,7 @@ def get_range_for_difficulty(difficulty: str):
 
 
 def parse_guess(raw: str):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
+    if raw is None or raw == "":
         return False, None, "Enter a guess."
 
     try:
@@ -31,21 +28,21 @@ def parse_guess(raw: str):
 
 def check_guess(guess, secret):
     if guess == secret:
-        return "Win", "🎉 Correct!"
-    
+        return "Win", "🎉 Correct. You found the number."
 
-    try:
-        if guess > secret:
-            return "Too High", "📉 Go LOWER!"
-        else:
-            return "Too Low", "📈 Go HIGHER!"
-    except TypeError:
-        g = str(guess)
-        if g == secret:
-            return "Win", "🎉 Correct!"
-        if g > secret:
-            return "Too High", "📉 Go LOWER!"
-        return "Too Low", "📈 Go HIGHER!"
+    diff = abs(guess - secret)
+
+    if diff <= 5:
+        closeness = "very close"
+    elif diff <= 15:
+        closeness = "close"
+    else:
+        closeness = "far"
+
+    if guess > secret:
+        return "Too High", f"📉 Too high. You are {closeness}."
+    else:
+        return "Too Low", f"📈 Too low. You are {closeness}."
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -65,10 +62,11 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
 
     return current_score
 
-st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
-st.title("🎮 Game Glitch Investigator")
-st.caption("An AI-generated guessing game. Something is off.")
+st.set_page_config(page_title="Guided Guess", page_icon="🎮")
+
+st.title("🎮 Guided Guess")
+st.caption("A number guessing game with guided hints and feedback.")
 
 st.sidebar.header("Settings")
 
@@ -94,7 +92,7 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -105,23 +103,19 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "input_key" not in st.session_state:
+    st.session_state.input_key = 0
+
 st.subheader("Make a guess")
 
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
-with st.expander("Developer Debug Info"):
-    st.write("Secret:", st.session_state.secret)
-    st.write("Attempts:", st.session_state.attempts)
-    st.write("Score:", st.session_state.score)
-    st.write("Difficulty:", difficulty)
-    st.write("History:", st.session_state.history)
-
 raw_guess = st.text_input(
     "Enter your guess:",
-    key=f"guess_input_{difficulty}"
+    key=f"guess_input_{st.session_state.input_key}"
 )
 
 col1, col2, col3 = st.columns(3)
@@ -133,8 +127,15 @@ with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
+    low, high = get_range_for_difficulty(difficulty)
+
+    st.session_state.secret = random.randint(low, high)
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.score = 0
+    st.session_state.status = "playing"
+    st.session_state.history = []
+    st.session_state.input_key += 1
+
     st.success("New game started.")
     st.rerun()
 
@@ -186,4 +187,4 @@ if submit:
                 )
 
 st.divider()
-st.caption("Built by an AI that claims this code is production-ready.")
+st.caption("Number guessing game with improved logic and feedback.")
